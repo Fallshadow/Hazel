@@ -1,10 +1,7 @@
 #pragma once
 
+#include "hzpch.h"
 #include "Hazel/Core.h"
-
-// 应该集成到Core中
-#include <string>
-#include <functional>
 
 namespace Hazel
 {
