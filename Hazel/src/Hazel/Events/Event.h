@@ -41,9 +41,9 @@ virtual const char* GetName() const override {return #type;}
 	// 事件基类
 	class HAZEL_API Event
 	{
-		// 友元类 事件调度 可以访问自己的一切
-		friend class EventDispatcher;
 	public:
+		bool Handled = false;
+
 		virtual EventType GetEventType() const = 0;
 		virtual const char* GetName() const = 0;
 		virtual int GetCategoryFlags() const = 0;
@@ -55,7 +55,7 @@ virtual const char* GetName() const override {return #type;}
 			return GetCategoryFlags() & category;
 		}
 	protected:
-		bool m_Handled = false;
+
 	};
 
 	class EventDispatcher
@@ -74,7 +74,7 @@ virtual const char* GetName() const override {return #type;}
 		{
 			if (m_Event.GetEventType() == T::GetStaticType())
 			{
-				m_Event.m_Handled = func(*(T*)&m_Event);
+				m_Event.Handled = func(*(T*)&m_Event);
 				return true;
 			}
 

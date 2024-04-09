@@ -2,6 +2,7 @@
 
 // For use by Hazel 
 #include "Hazel/Application.h"
+#include "Hazel/Layer.h"
 #include "Hazel/Log.h"
 
 // ---Entry Point------------------
