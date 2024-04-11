@@ -81,7 +81,7 @@ namespace Hazel
 				{
 					case GLFW_PRESS: 
 					{
-						KeyPressEvent event(key, 0);
+						KeyPressedEvent event(key, 0);
 						data.EventCallback(event);
 						break;
 					}
@@ -93,7 +93,7 @@ namespace Hazel
 					}
 					case GLFW_REPEAT:
 					{
-						KeyPressEvent event(key, 1);
+						KeyPressedEvent event(key, 1);
 						data.EventCallback(event);
 						break;
 					}
@@ -125,7 +125,7 @@ namespace Hazel
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 				
-				MouseScrollEvent event((float)xOffset, (float)yOffset);
+				MouseScrolledEvent event((float)xOffset, (float)yOffset);
 				data.EventCallback(event);
 			});
 
