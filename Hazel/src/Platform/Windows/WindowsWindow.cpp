@@ -122,7 +122,7 @@ namespace Hazel
 					}
 					case GLFW_RELEASE:
 					{
-						KeyReleasedEvent event(button);
+						MouseButtonReleasedEvent event(button);
 						data.EventCallback(event);
 						break;
 					}
