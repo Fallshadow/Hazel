@@ -2,7 +2,8 @@
 #include "ImGuiLayer.h"
 
 #include "imgui.h"
-#include "Platform/OpenGL/ImGuiOpenGLRenderer.h"
+#include "examples/imgui_impl_opengl3.cpp"
+#include "examples/imgui_impl_glfw.cpp"
 
 #include "Hazel/Application.h"
 // 按键映射的临时方案所需
