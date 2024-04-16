@@ -19,7 +19,8 @@ namespace Hazel
 	// 推入普通层，推到栈顶，迭代器向上增长
 	void LayerStack::PushLay(Layer* layer)
 	{
-		m_LayerInsert = m_Layers.emplace(m_LayerInsert, layer);
+		m_Layers.emplace(m_Layers.begin() + m_LayerInsertIndex, layer);
+		m_LayerInsertIndex++;
 	}
 
 	// 推入覆盖层，推到栈底，迭代器不动
@@ -35,7 +36,7 @@ namespace Hazel
 		if (it != m_Layers.end())
 		{
 			m_Layers.erase(it);
-			m_LayerInsert--;
+			m_LayerInsertIndex--;
 		}
 	}
 
