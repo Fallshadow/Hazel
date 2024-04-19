@@ -81,17 +81,17 @@ project "Hazel"
 			"GLFW_INCLUDE_NONE"
 		}
 
-	filter "configurations.Debug"
+	filter "configurations:Debug"
 		defines "HZ_DEBUG"
 		runtime "Debug"
 		symbols "on"
 
-	filter "configurations.Release"
+	filter "configurations:Release"
 		defines "HZ_RELEASE"
 		runtime "Release"
 		optimize "on"
 
-	filter "configurations.Dist"
+	filter "configurations:Dist"
 		defines "HZ_DIST"
 		runtime "Release"
 		optimize "on"
@@ -134,17 +134,17 @@ project "Sandbox"
 			"HZ_PLATFORM_WINDOWS",
 		}
 
-	filter "configurations.Debug"
+	filter "configurations:Debug"
 		defines "HZ_DEBUG"
 		runtime "Debug"
 		symbols "on"
 
-	filter "configurations.Release"
+	filter "configurations:Release"
 		defines "HZ_RELEASE"
 		runtime "Release"
 		optimize "on"
 
-	filter "configurations.Dist"
+	filter "configurations:Dist"
 		defines "HZ_DIST"
 		runtime "Release"
 		optimize "on"
