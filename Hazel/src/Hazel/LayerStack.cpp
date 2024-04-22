@@ -33,7 +33,7 @@ namespace Hazel
 	// 弹出普通层，迭代器向下减少
 	void LayerStack::PopLay(Layer* layer)
 	{
-		auto it = std::find(m_Layers.begin(), m_Layers.end(), layer);
+		auto it = std::find(m_Layers.begin(), m_Layers.begin() + m_LayerInsertIndex, layer);
 		if (it != m_Layers.end())
 		{
 			layer->OnDetach();
@@ -45,7 +45,7 @@ namespace Hazel
 	// 弹出覆盖层，迭代器不动
 	void LayerStack::PopOverlay(Layer* overlay)
 	{
-		auto it = std::find(m_Layers.begin(), m_Layers.end(), overlay);
+		auto it = std::find(m_Layers.begin() + m_LayerInsertIndex, m_Layers.end(), overlay);
 		if (it != m_Layers.end())
 		{
 			overlay->OnDetach();
