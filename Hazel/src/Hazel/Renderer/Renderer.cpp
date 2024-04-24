@@ -1,5 +1,6 @@
 #include "hzpch.h"
 #include "Renderer.h"
+#include "Platform/OpenGL/OpenGLShader.h"
 
 namespace Hazel
 {
@@ -20,8 +21,9 @@ namespace Hazel
 		const glm::mat4& transform)
 	{
 		shader->Bind();
-		shader->UploadUniformMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
-		shader->UploadUniformMat4("u_Transform", transform);
+		// 其实这些方法也应该变成抽象方法，而不是进行转换
+		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
+		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_Transform", transform);
 
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
