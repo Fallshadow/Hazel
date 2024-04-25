@@ -53,15 +53,14 @@ namespace Hazel
 		glBindVertexArray(m_RendererID);
 		vb->Bind();
 
-		uint32_t index = 0;
 		const auto& layout = vb->GetLayout();
 		for (const auto& e : layout)
 		{
-			glEnableVertexAttribArray(index);
-			glVertexAttribPointer(index, e.GetComponentCount(), ShaderDataTypeToOpenGLBaseType(e.Type),
+			glEnableVertexAttribArray(m_VertexBufferIndex);
+			glVertexAttribPointer(m_VertexBufferIndex, e.GetComponentCount(), ShaderDataTypeToOpenGLBaseType(e.Type),
 				e.Normalized ? GL_TRUE : GL_FALSE,
 				layout.GetStride(), (const void*)e.Offset);
-			index++;
+			m_VertexBufferIndex++;
 		}
 		m_VertexBuffers.push_back(vb);
 	}
