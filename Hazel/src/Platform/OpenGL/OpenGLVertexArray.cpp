@@ -57,9 +57,10 @@ namespace Hazel
 		for (const auto& e : layout)
 		{
 			glEnableVertexAttribArray(m_VertexBufferIndex);
+			// intptr_t 将int转换为更大范围
 			glVertexAttribPointer(m_VertexBufferIndex, e.GetComponentCount(), ShaderDataTypeToOpenGLBaseType(e.Type),
 				e.Normalized ? GL_TRUE : GL_FALSE,
-				layout.GetStride(), (const void*)e.Offset);
+				layout.GetStride(), (const void*)(intptr_t)e.Offset);
 			m_VertexBufferIndex++;
 		}
 		m_VertexBuffers.push_back(vb);
