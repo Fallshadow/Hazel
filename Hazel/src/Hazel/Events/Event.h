@@ -31,7 +31,7 @@ namespace Hazel
 
 // 利用宏定义 定义事件类型相关函数和事件类型数据
 // 获取静态事件类型、获取事件枚举类型（可重写）、获取事件名称（可重写）
-#define EVENT_CLASS_TYPE(type) static EventType GetStaticType(){ return EventType::##type; }\
+#define EVENT_CLASS_TYPE(type) static EventType GetStaticType(){ return EventType::type; }\
 virtual EventType GetEventType() const override { return GetStaticType();}\
 virtual const char* GetName() const override {return #type;}
 
