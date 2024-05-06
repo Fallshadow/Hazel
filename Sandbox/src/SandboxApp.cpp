@@ -8,7 +8,7 @@
 class ExampleLayer :public Hazel::Layer
 {
 public:
-	ExampleLayer() : Layer("Example"), m_CameraController(1280.0f / 720.0f)
+	ExampleLayer() : Layer("Example"), m_CameraController(1280.0f / 720.0f, true)
 	{
 		m_VertexArray.reset(Hazel::VertexArray::Create());
 
