@@ -5,7 +5,7 @@
 #include "examples/imgui_impl_opengl3.cpp"
 #include "examples/imgui_impl_glfw.cpp"
 
-#include "Hazel/Application.h"
+#include "Hazel/Core/Application.h"
 // 按键映射的临时方案所需
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>

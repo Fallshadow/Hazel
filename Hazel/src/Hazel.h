@@ -1,16 +1,16 @@
 #pragma once
 
 // For use by Hazel 
-#include "Hazel/Application.h"
-#include "Hazel/Layer.h"
+#include "Hazel/Core/Application.h"
+#include "Hazel/Core/Layer.h"
 #include "Hazel/ImGui/ImGuiLayer.h"
-#include "Hazel/Log.h"
+#include "Hazel/Core/Log.h"
 
 #include "Hazel/Core/Timestep.h"
-#include "Hazel/Input.h"
-#include "Hazel/KeyCodes.h"
-#include "Hazel/MouseButtonCodes.h"
-#include "Hazel/OrthographicCameraController.h"
+#include "Hazel/Core/Input.h"
+#include "Hazel/Core/KeyCodes.h"
+#include "Hazel/Core/MouseButtonCodes.h"
+#include "Hazel/Renderer/OrthographicCameraController.h"
 
 // ---Renderer------------------------
 #include "Hazel/Renderer/Renderer.h"
@@ -24,6 +24,6 @@
 #include "Hazel/Renderer/OrthographicCamera.h"
 
 // ---Entry Point------------------
-#include "Hazel/EntryPoint.h"
+#include "Hazel/Core/EntryPoint.h"
 // --------------------------------
 
