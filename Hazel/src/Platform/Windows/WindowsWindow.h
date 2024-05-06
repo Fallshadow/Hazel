@@ -27,7 +27,7 @@ namespace Hazel
 		virtual void Shutdown();
 	private:
 		GLFWwindow* m_Window;
-		OpenGLContext* m_Context;
+		Scope<OpenGLContext> m_Context;
 
 		struct WindowData
 		{
