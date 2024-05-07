@@ -1,9 +1,9 @@
 #include "hzpch.h"
-#include "Renderer2D.h"
+#include "Hazel/Renderer/Renderer2D.h"
 
-#include "VertexArray.h"
-#include "Shader.h"
-#include "RenderCommand.h"
+#include "Hazel/Renderer/VertexArray.h"
+#include "Hazel/Renderer/Shader.h"
+#include "Hazel/Renderer/RenderCommand.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 

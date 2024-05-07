@@ -1,9 +1,9 @@
 #include "hzpch.h"
-#include "ImGuiLayer.h"
+#include "Hazel/ImGui/ImGuiLayer.h"
 
-#include "imgui.h"
-#include "examples/imgui_impl_opengl3.cpp"
-#include "examples/imgui_impl_glfw.cpp"
+#include <imgui.h>
+#include <examples/imgui_impl_opengl3.cpp>
+#include <examples/imgui_impl_glfw.cpp>
 
 #include "Hazel/Core/Application.h"
 // 按键映射的临时方案所需

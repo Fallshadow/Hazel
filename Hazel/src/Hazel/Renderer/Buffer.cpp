@@ -1,6 +1,6 @@
 #include "hzpch.h"
-#include "Buffer.h"
-#include "Renderer.h"
+#include "Hazel/Renderer/Buffer.h"
+#include "Hazel/Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
 
 namespace Hazel
