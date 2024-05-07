@@ -39,7 +39,6 @@ namespace Hazel
 
 		if (s_GLFWWindowCount == 0)
 		{
-			HZ_CORE_INFO("Initializing GLFW");
 			int success = glfwInit();
 			HZ_CORE_ASSERT(success, "Could not intialize GLFW!");
 			glfwSetErrorCallback(GLFWErrorCallback);
