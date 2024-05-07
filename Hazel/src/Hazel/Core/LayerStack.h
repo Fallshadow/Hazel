@@ -11,7 +11,7 @@ namespace Hazel
 	// 层分为普通层和覆盖层
 	// 普通层可以理解为正常栈，覆盖层则是位于普通层栈底下的另一个栈
 	// 代码上把这两个放在一起，m_LayerInsert则始终位于栈顶，且只有普通栈能影响它
-	class HAZEL_API LayerStack
+	class LayerStack
 	{
 	public:
 		LayerStack();

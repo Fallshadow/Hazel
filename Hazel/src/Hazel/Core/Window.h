@@ -18,7 +18,7 @@ namespace Hazel
 	};
 
 	// 抽象类 需要在每个平台上实现
-	class HAZEL_API Window
+	class Window
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
