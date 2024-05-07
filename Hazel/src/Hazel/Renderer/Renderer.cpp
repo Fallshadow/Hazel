@@ -1,6 +1,5 @@
 #include "hzpch.h"
 #include "Hazel/Renderer/Renderer.h"
-#include "Platform/OpenGL/OpenGLShader.h"
 #include "Hazel/Renderer/Renderer2D.h"
 
 namespace Hazel
@@ -32,15 +31,11 @@ namespace Hazel
 	{
 	}
 
-	void Renderer::Submit(
-		const Ref<Shader>& shader, 
-		const Ref<VertexArray>& vertexArray, 
-		const glm::mat4& transform)
+	void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const glm::mat4& transform)
 	{
 		shader->Bind();
-		// 其实这些方法也应该变成抽象方法，而不是进行转换
-		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
-		std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_Transform", transform);
+		shader->SetMat4("u_ViewProjection", s_SceneData->ViewProjectionMatrix);
+		shader->SetMat4("u_Transform", transform);
 
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
