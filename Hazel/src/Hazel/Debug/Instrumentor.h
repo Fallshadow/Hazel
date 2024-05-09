@@ -162,7 +162,7 @@ namespace Hazel
 	};
 }
 
-#define HZ_PROFILE 1
+#define HZ_PROFILE 0
 #if HZ_PROFILE
 
 // Resolve which function signature macro will be used. Note that this only
