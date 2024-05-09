@@ -17,14 +17,12 @@ namespace Hazel
 	{
 		m_Layers.emplace(m_Layers.begin() + m_LayerInsertIndex, layer);
 		m_LayerInsertIndex++;
-		layer->OnAttach();
 	}
 
 	// 推入覆盖层，直接插到列表最后
 	void LayerStack::PushOverlay(Layer* overlay)
 	{
 		m_Layers.emplace_back(overlay);
-		overlay->OnAttach();
 	}
 
 	// 弹出普通层，在index范围内查找，找到后删除
