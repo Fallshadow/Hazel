@@ -50,7 +50,7 @@ virtual const char* GetName() const override {return #type;}
 		// 只用于调试，所以不太关注性能（是不是应该用宏包起来）
 		virtual std::string ToString() const { return GetName(); }
 
-		inline bool IsInCategory(EventCategory category)
+		bool IsInCategory(EventCategory category)
 		{
 			return GetCategoryFlags() & category;
 		}
