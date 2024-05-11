@@ -66,12 +66,49 @@ namespace Hazel
 		const auto& layout = vb->GetLayout();
 		for (const auto& e : layout)
 		{
-			glEnableVertexAttribArray(m_VertexBufferIndex);
-			// intptr_t 将int转换为更大范围
-			glVertexAttribPointer(m_VertexBufferIndex, e.GetComponentCount(), ShaderDataTypeToOpenGLBaseType(e.Type),
-				e.Normalized ? GL_TRUE : GL_FALSE,
-				layout.GetStride(), (const void*)(intptr_t)e.Offset);
-			m_VertexBufferIndex++;
+			switch (e.Type)
+			{
+			case ShaderDataType::Float:
+			case ShaderDataType::Float2:
+			case ShaderDataType::Float3:
+			case ShaderDataType::Float4:
+			case ShaderDataType::Int:
+			case ShaderDataType::Int2:
+			case ShaderDataType::Int3:
+			case ShaderDataType::Int4:
+			case ShaderDataType::Bool:
+			{
+				glEnableVertexAttribArray(m_VertexBufferIndex);
+				glVertexAttribPointer(m_VertexBufferIndex,
+					e.GetComponentCount(),
+					ShaderDataTypeToOpenGLBaseType(e.Type),
+					e.Normalized ? GL_TRUE : GL_FALSE,
+					layout.GetStride(),
+					(const void*)e.Offset);
+				m_VertexBufferIndex++;
+				break;
+			}
+			case ShaderDataType::Mat3:
+			case ShaderDataType::Mat4:
+			{
+				uint8_t count = e.GetComponentCount();
+				for (uint8_t i = 0; i < count; i++)
+				{
+					glEnableVertexAttribArray(m_VertexBufferIndex);
+					glVertexAttribPointer(m_VertexBufferIndex,
+						count,
+						ShaderDataTypeToOpenGLBaseType(e.Type),
+						e.Normalized ? GL_TRUE : GL_FALSE,
+						layout.GetStride(),
+						(const void*)(sizeof(float) * count * i));
+					glVertexAttribDivisor(m_VertexBufferIndex, 1);
+					m_VertexBufferIndex++;
+				}
+				break;
+			}
+			default:
+				HZ_CORE_ASSERT(false, "Unknown ShaderDataType!");
+			}
 		}
 		m_VertexBuffers.push_back(vb);
 	}
