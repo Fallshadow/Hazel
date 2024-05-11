@@ -105,7 +105,7 @@ namespace Hazel
 	{
 		HZ_PROFILE_FUNCTION();
 
-		s_Data.TextureSlotIndex = 1;
+		delete[] s_Data.QuadVertexBufferBase;
 	}
 
 	void Renderer2D::BeginScene(const OrthographicCamera& camera)
