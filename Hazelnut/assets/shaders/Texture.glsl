@@ -41,6 +41,7 @@ void main()
 {
 	// 写成这样似乎是因为AMD某些不支持一行，必须32行
 	// 至于4 暂时还不清楚
+	// 后面又直接加了4 感觉也没啥关系了？
 	vec4 texColor = v_Color;
 	switch(int(v_TexIndex))
 	{
@@ -48,6 +49,7 @@ void main()
 		case 1: texColor *= texture(u_Textures[1], v_TexCoord * v_TilingFactor); break;
 		case 2: texColor *= texture(u_Textures[2], v_TexCoord * v_TilingFactor); break;
 		case 3: texColor *= texture(u_Textures[3], v_TexCoord * v_TilingFactor); break;
+		case 4: texColor *= texture(u_Textures[4], v_TexCoord * v_TilingFactor); break;
 		case 5: texColor *= texture(u_Textures[5], v_TexCoord * v_TilingFactor); break;
 		case 6: texColor *= texture(u_Textures[6], v_TexCoord * v_TilingFactor); break;
 		case 7: texColor *= texture(u_Textures[7], v_TexCoord * v_TilingFactor); break;

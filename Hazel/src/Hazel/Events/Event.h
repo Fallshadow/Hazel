@@ -42,6 +42,8 @@ virtual const char* GetName() const override {return #type;}
 	class Event
 	{
 	public:
+		virtual ~Event() = default;
+
 		bool Handled = false;
 
 		virtual EventType GetEventType() const = 0;
