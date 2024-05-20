@@ -8,6 +8,7 @@ namespace Hazel
 	class RendererAPI
 	{
 	public:
+		// 甚至是none，比如服务器不需要渲染
 		enum class API
 		{
 			None = 0, OpenGL = 1
