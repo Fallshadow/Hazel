@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 
+#include "Hazel/Renderer/Camera.h"
+
 namespace Hazel
 {
 	struct TagComponent
@@ -12,6 +14,19 @@ namespace Hazel
 		TagComponent(const TagComponent&) = default;
 		TagComponent(const std::string& tag)
 			: Tag(tag)
+		{
+		}
+	};
+
+	struct CameraComponent
+	{
+		Hazel::Camera Camera;
+		bool Primary = true; // TODO: think about moving to Scene
+
+		CameraComponent() = default;
+		CameraComponent(const CameraComponent&) = default;
+		CameraComponent(const glm::mat4& projection)
+			: Camera(projection)
 		{
 		}
 	};
