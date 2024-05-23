@@ -18,7 +18,6 @@ namespace Hazel
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
 		auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
 		return state == GLFW_PRESS;
-
 	}
 
 	std::pair<float, float> Input::GetMousePosition()
