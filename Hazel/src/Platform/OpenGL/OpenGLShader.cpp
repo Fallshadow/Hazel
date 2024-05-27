@@ -159,7 +159,7 @@ namespace Hazel
 		// 跳跃到文件末尾的0偏移位置，读取到当前文件流的大小，并置为result大小
 		// 跳跃到文件开头的0偏移位置，将内容置入result
 		std::string result;
-		std::ifstream in(filepath, std::ios::in | std::ios::binary);
+		std::ifstream in(filepath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
 		if (in)
 		{
 			in.seekg(0, std::ios::end);
@@ -169,7 +169,6 @@ namespace Hazel
 				result.resize(size);
 				in.seekg(0, std::ios::beg);
 				in.read(&result[0], size);
-				in.close();
 			}
 			else
 			{
