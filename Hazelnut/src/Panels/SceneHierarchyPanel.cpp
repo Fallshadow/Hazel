@@ -25,6 +25,8 @@ namespace Hazel
 			});
 
 		ImGui::End();
+
+		// ImGui::ShowDemoWindow();
 	}
 
 	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
