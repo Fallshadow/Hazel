@@ -31,7 +31,11 @@ namespace Hazel
 		// 翻转设置
 		stbi_set_flip_vertically_on_load(1);
 		// 加载到CPU
-		stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+		stbi_uc* data = nullptr;
+		{
+			HZ_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&)");
+			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+		}
 		HZ_CORE_ASSERT(data, "Failed to load image!");
 		m_Width = width;
 		m_Height = height;
