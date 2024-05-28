@@ -4,6 +4,16 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Hazel/Scene/Components.h"
 
+#include <cstring>
+
+/* The Microsoft C++ compiler is non-compliant with the C++ standard and needs
+ * the following definition to disable a security warning on std::strncpy().
+ */
+// 之前使用C函数strcpy_s，大家认为不应该在C++代码中使用C，而std::strncpy微软编译器会报警告，大家说这个微软的锅，我们不理会
+#ifdef _MSVC_LANG
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 namespace Hazel
 {
 	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context)
@@ -208,7 +218,7 @@ namespace Hazel
 
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
-			strcpy_s(buffer, sizeof(buffer), tag.c_str());
+			std::strncpy(buffer, tag.c_str(), sizeof(buffer));
 			if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
 			{
 				tag = std::string(buffer);
