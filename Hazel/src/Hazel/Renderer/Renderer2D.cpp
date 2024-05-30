@@ -16,6 +16,9 @@ namespace Hazel
 		glm::vec2 TexCoord;
 		float TexIndex;
 		float TilingFactor;
+
+		// Editor-only
+		int EntityID;
 	};
 
 	struct Renderer2DData
@@ -53,11 +56,12 @@ namespace Hazel
 		// 创建顶点缓冲区，先在GPU开辟一块与cpu对应大的内存，是为了传输顶点数据
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
 		s_Data.QuadVertexBuffer->SetLayout({
-			{ "a_Position", ShaderDataType::Float3 },
-			{ "a_Color", ShaderDataType::Float4},
-			{ "a_TexCoord", ShaderDataType::Float2  },
-			{ "a_TexIndex", ShaderDataType::Float },
-			{ "a_TilingFactor", ShaderDataType::Float }
+			{ "a_Position"		, ShaderDataType::Float3	},
+			{ "a_Color"			, ShaderDataType::Float4	},
+			{ "a_TexCoord"		, ShaderDataType::Float2	},
+			{ "a_TexIndex"		, ShaderDataType::Float		},
+			{ "a_TilingFactor"	, ShaderDataType::Float		},
+			{ "a_EntityID"		, ShaderDataType::Int		}
 		});
 
 		s_Data.QuadVertexArray = VertexArray::Create();
@@ -215,7 +219,7 @@ namespace Hazel
 		DrawQuad(transform, texture, tilingFactor, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID)
 	{
 		HZ_PROFILE_FUNCTION();
 
@@ -233,13 +237,14 @@ namespace Hazel
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
 		}
 		s_Data.QuadIndexCount += 6;
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor, int entityID)
 	{
 		HZ_PROFILE_FUNCTION();
 
@@ -272,6 +277,7 @@ namespace Hazel
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			s_Data.QuadVertexBufferPtr->EntityID = entityID;
 			s_Data.QuadVertexBufferPtr++;
 		}
 		s_Data.QuadIndexCount += 6;
@@ -308,6 +314,11 @@ namespace Hazel
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
 		DrawQuad(transform, texture, tilingFactor, tintColor);
+	}
+
+	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID)
+	{
+		DrawQuad(transform, src.Color, entityID);
 	}
 
 	void Renderer2D::ResetStats()
