@@ -58,7 +58,7 @@ namespace Hazel
 			{ "a_TexCoord", ShaderDataType::Float2  },
 			{ "a_TexIndex", ShaderDataType::Float },
 			{ "a_TilingFactor", ShaderDataType::Float }
-			});
+		});
 
 		s_Data.QuadVertexArray = VertexArray::Create();
 		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
