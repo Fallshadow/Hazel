@@ -301,6 +301,7 @@ namespace Hazel
 		}
 		catch (YAML::ParserException e)
 		{
+			HZ_CORE_ERROR("Failed to load .hazel file '{0}'\n     {1}", filepath, e.what());
 			return false;
 		}
 
