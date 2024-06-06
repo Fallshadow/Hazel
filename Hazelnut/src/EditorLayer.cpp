@@ -190,6 +190,9 @@ namespace Hazel
 				if (ImGui::MenuItem("Open...", "Ctrl+O"))
 					OpenScene();
 
+				if (ImGui::MenuItem("Save", "Ctrl+S"))
+					SaveScene();
+
 				if (ImGui::MenuItem("Deserialize"))
 				{
 					SceneSerializer serializer(m_ActiveScene);
