@@ -4,7 +4,6 @@
 #include "Hazel/Core/Log.h"
 
 #include "Hazel/Renderer/Renderer.h"
-#include <GLFW/glfw3.h>
 
 namespace Hazel
 {
@@ -79,7 +78,7 @@ namespace Hazel
 			HZ_PROFILE_SCOPE("RunLoop");
 
 			// window使用glfw 日后为了其他平台 可能需要Platform::GetTime()之类的实现
-			float time = (float)glfwGetTime();
+			float time = Time::GetTime();
 			Timestep timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 

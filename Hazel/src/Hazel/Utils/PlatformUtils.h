@@ -3,8 +3,8 @@
 #include <string>
 #include <optional>
 
-namespace Hazel {
-
+namespace Hazel 
+{
 	class FileDialogs
 	{
 	public:
@@ -13,4 +13,9 @@ namespace Hazel {
 		static std::optional<std::string> SaveFile(const char* filter);
 	};
 
+	class Time
+	{
+	public:
+		static float GetTime();
+	};
 }
