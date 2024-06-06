@@ -14,10 +14,6 @@ namespace Hazel
 		{
 			PushLayer(new EditorLayer());
 		}
-
-		~Hazelnut()
-		{
-		}
 	};
 
 	Application* CreateApplication()
