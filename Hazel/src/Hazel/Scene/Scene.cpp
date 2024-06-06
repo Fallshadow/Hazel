@@ -259,6 +259,8 @@ namespace Hazel
 				auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 
 				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+				// Ïß¿òÄ£Ê½
+				// Renderer2D::DrawRect(transform.GetTransform(),glm::vec4(1), (int)entity);
 			}
 		}
 
