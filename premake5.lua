@@ -34,7 +34,19 @@ IncludeDir["entt"] = "%{wks.location}/Hazel/vendor/entt/include"
 IncludeDir["yaml_cpp"] = "%{wks.location}/Hazel/vendor/yaml-cpp/include"
 IncludeDir["ImGuizmo"] = "%{wks.location}/Hazel/vendor/ImGuizmo"
 IncludeDir["Box2D"] = "%{wks.location}/Hazel/vendor/Box2D/include"
+IncludeDir["mono"] = "%{wks.location}/Hazel/vendor/mono/include"
 
+LibraryDir = {}
+LibraryDir["mono"] = "%{wks.location}/Hazel/vendor/mono/lib/%{cfg.buildcfg}"
+
+Library = {}
+Library["mono"] = "%{LibraryDir.mono}/libmono-static-sgen.lib"
+
+-- Windows
+Library["WinSock"] = "Ws2_32.lib"
+Library["WinMM"] = "Winmm.lib"
+Library["WinVersion"] = "Version.lib"
+Library["BCrypt"] = "Bcrypt.lib"
 
 group "Dependencies"
 	include "vendor/premake"
@@ -45,6 +57,15 @@ group "Dependencies"
 	include "Hazel/vendor/yaml-cpp"
 group ""
 
-include "Hazel"
-include "Sandbox"
-include "Hazelnut"
+group "Core"
+	include "Hazel"
+	include "Hazel-ScriptCore"
+group ""
+
+group "Tools"
+	include "Hazelnut"
+group ""
+
+group "Misc"
+	include "Sandbox"
+group ""
