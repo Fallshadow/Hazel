@@ -154,8 +154,6 @@ namespace Hazel
 		MonoMethod* printCustomMessageFunc = s_Data->EntityClass.GetMethod("PrintCustomMessage", 1);
 		void* stringParam = monoString;
 		s_Data->EntityClass.InvokeMethod(instance, printCustomMessageFunc, &stringParam);
-
-		HZ_CORE_ASSERT(false);
 	}
 
 	void ScriptEngine::Shutdown()
