@@ -112,9 +112,13 @@ namespace Hazel
 		// C# 域
 		MonoDomain* AppDomain = nullptr;
 
-		// C# 程序集
+		// Hazel C# 程序集
 		MonoAssembly* CoreAssembly = nullptr;
 		MonoImage* CoreAssemblyImage = nullptr;
+
+		// 用户 C# 程序集
+		MonoAssembly* AppAssembly = nullptr;
+		MonoImage* AppAssemblyImage = nullptr;
 
 		ScriptClass EntityClass;
 
@@ -132,38 +136,39 @@ namespace Hazel
 		s_SEData = new ScriptEngineData();
 		InitMono();
 		LoadAssembly("Resources/Scripts/Hazel-ScriptCore.dll");
-		LoadAssemblyClasses(s_SEData->CoreAssembly);
+		LoadAppAssembly("SandboxProject/Assets/Scripts/Binaries/Sandbox.dll");
+		LoadAssemblyClasses();
 
 		ScriptGlue::RegisterComponents();
 		ScriptGlue::RegisterFunctions();
 
-		s_SEData->EntityClass = ScriptClass("Hazel", "Entity");
+		s_SEData->EntityClass = ScriptClass("Hazel", "Entity", true);
 
 #if 0
-		MonoObject* instance = s_Data->EntityClass.Instantiate();
+		MonoObject* instance = s_SEData->EntityClass.Instantiate();
 
 		// Call method
-		MonoMethod* printMessageFunc = s_Data->EntityClass.GetMethod("PrintMessage", 0);
-		s_Data->EntityClass.InvokeMethod(instance, printMessageFunc);
+		MonoMethod* printMessageFunc = s_SEData->EntityClass.GetMethod("PrintMessage", 0);
+		s_SEData->EntityClass.InvokeMethod(instance, printMessageFunc);
 
-		MonoMethod* printIntFunc = s_Data->EntityClass.GetMethod("PrintInt", 1);
+		MonoMethod* printIntFunc = s_SEData->EntityClass.GetMethod("PrintInt", 1);
 		int value = 5;
 		void* param = &value;
-		s_Data->EntityClass.InvokeMethod(instance, printIntFunc, &param);
+		s_SEData->EntityClass.InvokeMethod(instance, printIntFunc, &param);
 
-		MonoMethod* printIntsFunc = s_Data->EntityClass.GetMethod("PrintInts", 2);
+		MonoMethod* printIntsFunc = s_SEData->EntityClass.GetMethod("PrintInts", 2);
 		int value2 = 508;
 		void* params[2] =
 		{
 			&value,
 			&value2
 		};
-		s_Data->EntityClass.InvokeMethod(instance, printIntsFunc, params);
+		s_SEData->EntityClass.InvokeMethod(instance, printIntsFunc, params);
 
-		MonoString* monoString = mono_string_new(s_Data->AppDomain, "Hello World from C++!");
-		MonoMethod* printCustomMessageFunc = s_Data->EntityClass.GetMethod("PrintCustomMessage", 1);
+		MonoString* monoString = mono_string_new(s_SEData->AppDomain, "Hello World from C++!");
+		MonoMethod* printCustomMessageFunc = s_SEData->EntityClass.GetMethod("PrintCustomMessage", 1);
 		void* stringParam = monoString;
-		s_Data->EntityClass.InvokeMethod(instance, printCustomMessageFunc, &stringParam);
+		s_SEData->EntityClass.InvokeMethod(instance, printCustomMessageFunc, &stringParam);
 #endif
 	}
 
@@ -194,7 +199,17 @@ namespace Hazel
 		// 获取image引用
 		s_SEData->CoreAssemblyImage = mono_assembly_get_image(s_SEData->CoreAssembly);
 		// 查看程序集中包含的所有类、结构体和枚举
-		// Utils::PrintAssemblyTypes(s_SEData->CoreAssembly);
+		Utils::PrintAssemblyTypes(s_SEData->CoreAssembly);
+	}
+
+	void ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
+	{
+		// Move this maybe
+		s_SEData->AppAssembly = Utils::LoadMonoAssembly(filepath);
+
+		s_SEData->AppAssemblyImage = mono_assembly_get_image(s_SEData->AppAssembly);
+
+		Utils::PrintAssemblyTypes(s_SEData->AppAssembly);
 	}
 
 	void ScriptEngine::OnRuntimeStart(Scene* scene)
@@ -244,23 +259,22 @@ namespace Hazel
 		return s_SEData->EntityClasses;
 	}
 
-	void ScriptEngine::LoadAssemblyClasses(MonoAssembly* assembly)
+	void ScriptEngine::LoadAssemblyClasses()
 	{
 		s_SEData->EntityClasses.clear();
 
-		MonoImage* image = mono_assembly_get_image(assembly);
-		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(s_SEData->AppAssemblyImage, MONO_TABLE_TYPEDEF);
 		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
 		// 1.加载Entity父类
-		MonoClass* entityClass = mono_class_from_name(image, "Hazel", "Entity");
+		MonoClass* entityClass = mono_class_from_name(s_SEData->CoreAssemblyImage, "Hazel", "Entity");
 
 		for (int32_t i = 0; i < numTypes; i++)
 		{
 			uint32_t cols[MONO_TYPEDEF_SIZE];
 			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
 
-			const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
-			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+			const char* nameSpace = mono_metadata_string_heap(s_SEData->AppAssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
+			const char* name = mono_metadata_string_heap(s_SEData->AppAssemblyImage, cols[MONO_TYPEDEF_NAME]);
 			std::string fullName;
 			if (strlen(nameSpace) != 0)
 				fullName = fmt::format("{}.{}", nameSpace, name);
@@ -268,7 +282,7 @@ namespace Hazel
 				fullName = name;
 
 			// 2.加载Dll中所有C#类
-			MonoClass* monoClass = mono_class_from_name(image, nameSpace, name);
+			MonoClass* monoClass = mono_class_from_name(s_SEData->AppAssemblyImage, nameSpace, name);
 			// entity父类不保存
 			if (monoClass == entityClass)
 				continue;
@@ -286,11 +300,11 @@ namespace Hazel
 		return s_SEData->CoreAssemblyImage;
 	}
 
-	ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className)
+	ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className, bool isCore)
 		: m_ClassNamespace(classNamespace), m_ClassName(className)
 	{
 		// 获取类指针
-		m_MonoClass = mono_class_from_name(s_SEData->CoreAssemblyImage, classNamespace.c_str(), className.c_str());
+		m_MonoClass = mono_class_from_name(isCore ? s_SEData->CoreAssemblyImage : s_SEData->AppAssemblyImage, classNamespace.c_str(), className.c_str());
 	}
 
 	MonoObject* ScriptClass::Instantiate()
@@ -309,8 +323,7 @@ namespace Hazel
 	// 调用函数
 	MonoObject* ScriptClass::InvokeMethod(MonoObject* instance, MonoMethod* method, void** params)
 	{
-		MonoObject* exception = nullptr;
-		return mono_runtime_invoke(method, instance, params, &exception);
+		return mono_runtime_invoke(method, instance, params, nullptr);
 	}
 
 	void ScriptEngine::InitMono()
