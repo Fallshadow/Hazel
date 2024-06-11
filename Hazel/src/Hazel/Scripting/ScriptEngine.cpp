@@ -117,19 +117,29 @@ namespace Hazel
 		MonoImage* CoreAssemblyImage = nullptr;
 
 		ScriptClass EntityClass;
+
+		std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
+		std::unordered_map<UUID, Ref<ScriptInstance>> EntityInstances;
+
+		// Runtime
+		Scene* SceneContext = nullptr;
 	};
 
-	static ScriptEngineData* s_Data = nullptr;
+	static ScriptEngineData* s_SEData = nullptr;
 
 	void ScriptEngine::Init()
 	{
-		s_Data = new ScriptEngineData();
+		s_SEData = new ScriptEngineData();
 		InitMono();
 		LoadAssembly("Resources/Scripts/Hazel-ScriptCore.dll");
+		LoadAssemblyClasses(s_SEData->CoreAssembly);
+
+		ScriptGlue::RegisterComponents();
 		ScriptGlue::RegisterFunctions();
 
-		s_Data->EntityClass = ScriptClass("Hazel", "Entity");
+		s_SEData->EntityClass = ScriptClass("Hazel", "Entity");
 
+#if 0
 		MonoObject* instance = s_Data->EntityClass.Instantiate();
 
 		// Call method
@@ -154,18 +164,19 @@ namespace Hazel
 		MonoMethod* printCustomMessageFunc = s_Data->EntityClass.GetMethod("PrintCustomMessage", 1);
 		void* stringParam = monoString;
 		s_Data->EntityClass.InvokeMethod(instance, printCustomMessageFunc, &stringParam);
+#endif
 	}
 
 	void ScriptEngine::Shutdown()
 	{
 		ShutdownMono();
-		delete s_Data;
+		delete s_SEData;
 	}
 
 	// 为类分配对象内存并调用无参构造
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
 	{
-		MonoObject* instance = mono_object_new(s_Data->AppDomain, monoClass);
+		MonoObject* instance = mono_object_new(s_SEData->AppDomain, monoClass);
 		mono_runtime_object_init(instance);
 		return instance;
 	}
@@ -174,23 +185,112 @@ namespace Hazel
 	void ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)
 	{
 		// 创建应用程序域，第一个参数是我们自己起的名字，第二个参数是配置文件路径，我们不需要
-		s_Data->AppDomain = mono_domain_create_appdomain("HazelScriptRuntime", nullptr);
+		s_SEData->AppDomain = mono_domain_create_appdomain("HazelScriptRuntime", nullptr);
 		// 将新的应用程序域设置为当前应用程序域，第一个参数为新的应用程序域，第二个参数为是否强制执行，其实false应该也行，true可以让正在卸载应用程序域时也强行设置
-		mono_domain_set(s_Data->AppDomain, true);
+		mono_domain_set(s_SEData->AppDomain, true);
 
 		// 加载C#程序集
-		s_Data->CoreAssembly = Utils::LoadMonoAssembly(filepath);
+		s_SEData->CoreAssembly = Utils::LoadMonoAssembly(filepath);
 		// 获取image引用
-		s_Data->CoreAssemblyImage = mono_assembly_get_image(s_Data->CoreAssembly);
+		s_SEData->CoreAssemblyImage = mono_assembly_get_image(s_SEData->CoreAssembly);
 		// 查看程序集中包含的所有类、结构体和枚举
-		// Utils::PrintAssemblyTypes(s_Data->CoreAssembly);
+		// Utils::PrintAssemblyTypes(s_SEData->CoreAssembly);
+	}
+
+	void ScriptEngine::OnRuntimeStart(Scene* scene)
+	{
+		s_SEData->SceneContext = scene;
+	}
+
+	bool ScriptEngine::EntityClassExists(const std::string& fullClassName)
+	{
+		return s_SEData->EntityClasses.find(fullClassName) != s_SEData->EntityClasses.end();
+	}
+
+	void ScriptEngine::OnCreateEntity(Entity entity)
+	{
+		const auto& sc = entity.GetComponent<ScriptComponent>();
+		if (ScriptEngine::EntityClassExists(sc.ClassName))
+		{
+			Ref<ScriptInstance> instance = CreateRef<ScriptInstance>(s_SEData->EntityClasses[sc.ClassName], entity);
+			s_SEData->EntityInstances[entity.GetUUID()] = instance;
+			instance->InvokeOnCreate();
+		}
+	}
+
+	void ScriptEngine::OnUpdateEntity(Entity entity, Timestep ts)
+	{
+		UUID entityUUID = entity.GetUUID();
+		HZ_CORE_ASSERT(s_SEData->EntityInstances.find(entityUUID) != s_SEData->EntityInstances.end());
+
+		Ref<ScriptInstance> instance = s_SEData->EntityInstances[entityUUID];
+		instance->InvokeOnUpdate((float)ts);
+	}
+
+	Scene* ScriptEngine::GetSceneContext()
+	{
+		return s_SEData->SceneContext;
+	}
+
+	void ScriptEngine::OnRuntimeStop()
+	{
+		s_SEData->SceneContext = nullptr;
+
+		s_SEData->EntityInstances.clear();
+	}
+
+	std::unordered_map<std::string, Ref<ScriptClass>> ScriptEngine::GetEntityClasses()
+	{
+		return s_SEData->EntityClasses;
+	}
+
+	void ScriptEngine::LoadAssemblyClasses(MonoAssembly* assembly)
+	{
+		s_SEData->EntityClasses.clear();
+
+		MonoImage* image = mono_assembly_get_image(assembly);
+		const MonoTableInfo* typeDefinitionsTable = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+		int32_t numTypes = mono_table_info_get_rows(typeDefinitionsTable);
+		// 1.加载Entity父类
+		MonoClass* entityClass = mono_class_from_name(image, "Hazel", "Entity");
+
+		for (int32_t i = 0; i < numTypes; i++)
+		{
+			uint32_t cols[MONO_TYPEDEF_SIZE];
+			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
+
+			const char* nameSpace = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+			std::string fullName;
+			if (strlen(nameSpace) != 0)
+				fullName = fmt::format("{}.{}", nameSpace, name);
+			else
+				fullName = name;
+
+			// 2.加载Dll中所有C#类
+			MonoClass* monoClass = mono_class_from_name(image, nameSpace, name);
+			// entity父类不保存
+			if (monoClass == entityClass)
+				continue;
+			// 3.判断当前类是否为Entity的子类
+			bool isEntity = mono_class_is_subclass_of(monoClass, entityClass, false);
+			if (isEntity)
+				// 存入封装的Mono类对象
+				// 3.1是就存入脚本map中
+				s_SEData->EntityClasses[fullName] = CreateRef<ScriptClass>(nameSpace, name);
+		}
+	}
+
+	MonoImage* ScriptEngine::GetCoreAssemblyImage()
+	{
+		return s_SEData->CoreAssemblyImage;
 	}
 
 	ScriptClass::ScriptClass(const std::string& classNamespace, const std::string& className)
 		: m_ClassNamespace(classNamespace), m_ClassName(className)
 	{
 		// 获取类指针
-		m_MonoClass = mono_class_from_name(s_Data->CoreAssemblyImage, classNamespace.c_str(), className.c_str());
+		m_MonoClass = mono_class_from_name(s_SEData->CoreAssemblyImage, classNamespace.c_str(), className.c_str());
 	}
 
 	MonoObject* ScriptClass::Instantiate()
@@ -209,7 +309,8 @@ namespace Hazel
 	// 调用函数
 	MonoObject* ScriptClass::InvokeMethod(MonoObject* instance, MonoMethod* method, void** params)
 	{
-		return mono_runtime_invoke(method, instance, params, nullptr);
+		MonoObject* exception = nullptr;
+		return mono_runtime_invoke(method, instance, params, &exception);
 	}
 
 	void ScriptEngine::InitMono()
@@ -225,7 +326,7 @@ namespace Hazel
 		HZ_CORE_ASSERT(rootDomain);
 
 		// 在调用此函数时，我们会得到一个 MonoDomain 指针，重要的是我们要存储这个指针，因为稍后我们必须手动清理它
-		s_Data->RootDomain = rootDomain;
+		s_SEData->RootDomain = rootDomain;
 #pragma endregion
 	}
 
@@ -233,11 +334,42 @@ namespace Hazel
 	{
 		// NOTE(Yan): mono is a little confusing to shutdown, so maybe come back to this
 
-		// mono_domain_unload(s_Data->AppDomain);
-		s_Data->AppDomain = nullptr;
+		// mono_domain_unload(s_SEData->AppDomain);
+		s_SEData->AppDomain = nullptr;
 
-		// mono_jit_cleanup(s_Data->RootDomain);
-		s_Data->RootDomain = nullptr;
+		// mono_jit_cleanup(s_SEData->RootDomain);
+		s_SEData->RootDomain = nullptr;
 	}
 
+	ScriptInstance::ScriptInstance(Ref<ScriptClass> scriptClass, Entity entity)
+		: m_ScriptClass(scriptClass)
+	{
+		m_Instance = scriptClass->Instantiate();
+
+		m_Constructor = s_SEData->EntityClass.GetMethod(".ctor", 1);
+		m_OnCreateMethod = scriptClass->GetMethod("OnCreate", 0);
+		m_OnUpdateMethod = scriptClass->GetMethod("OnUpdate", 1);
+
+		// Call Entity constructor
+		{
+			UUID entityID = entity.GetUUID();
+			void* param = &entityID;
+			m_ScriptClass->InvokeMethod(m_Instance, m_Constructor, &param);
+		}
+	}
+
+	void ScriptInstance::InvokeOnCreate()
+	{
+		if (m_OnCreateMethod)
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnCreateMethod);
+	}
+
+	void ScriptInstance::InvokeOnUpdate(float ts)
+	{
+		if (m_OnUpdateMethod)
+		{
+			void* param = &ts;
+			m_ScriptClass->InvokeMethod(m_Instance, m_OnUpdateMethod, &param);
+		}
+	}
 }
