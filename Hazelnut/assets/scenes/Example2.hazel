@@ -1,12 +1,71 @@
 Scene: Untitled
 Entities:
-  - Entity: 12477523328540439941
+  - Entity: 162497921084749155
+    TagComponent:
+      Tag: Circle
+    TransformComponent:
+      Translation: [0, 1.60000002, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CircleRendererComponent:
+      Color: [0.980918407, 1, 0.0115830302, 1]
+      Thickness: 0.075000003
+      Fade: 0.00499999989
+    Rigidbody2DComponent:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponent:
+      Offset: [0, 0]
+      Radius: 0.5
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 13950422311892148437
+    TagComponent:
+      Tag: Ground
+    TransformComponent:
+      Translation: [0, -1.60000002, 0]
+      Rotation: [0, 0, 0]
+      Scale: [11.2152224, 0.573502064, 1]
+    SpriteRendererComponent:
+      Color: [0.563706577, 0.563700914, 0.563700914, 1]
+      TilingFactor: 1
+    Rigidbody2DComponent:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.5
+      Restitution: 0
+      RestitutionThreshold: 0.5
+  - Entity: 1368833094846507324
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 1
+        PerspectiveFOV: 0.785398185
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 11188412218949742281
     TagComponent:
       Tag: Box
     TransformComponent:
-      Translation: [-1.76311469, 0, 0]
-      Rotation: [0, 0, -0.712860167]
-      Scale: [0.999999881, 0.999999881, 1]
+      Translation: [1.89281559, 0, 0]
+      Rotation: [0, 0, 0.671705604]
+      Scale: [1, 1, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\ChernoLogo.png
@@ -29,18 +88,20 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     ScriptComponent:
-      ClassName: Sandbox.Player
+      ClassName: Sandbox.Camera
+      ScriptFields:
+        []
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\Checkerboard.png
       TilingFactor: 1
-  - Entity: 11188412218949742281
+  - Entity: 12477523328540439941
     TagComponent:
       Tag: Box
     TransformComponent:
-      Translation: [1.89281559, 0, 0]
-      Rotation: [0, 0, 0.671705604]
-      Scale: [1, 1, 1]
+      Translation: [-1.76311469, 0, 0]
+      Rotation: [0, 0, -0.712860167]
+      Scale: [0.999999881, 0.999999881, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TexturePath: assets\textures\ChernoLogo.png
@@ -54,63 +115,4 @@ Entities:
       Density: 1
       Friction: 0.5
       Restitution: 0.930000007
-      RestitutionThreshold: 0.5
-  - Entity: 1368833094846507324
-    TagComponent:
-      Tag: Camera
-    TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 1
-        PerspectiveFOV: 0.785398185
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 1000
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 1
-      Primary: true
-      FixedAspectRatio: false
-  - Entity: 13950422311892148437
-    TagComponent:
-      Tag: Ground
-    TransformComponent:
-      Translation: [0, -1.60000002, 0]
-      Rotation: [0, 0, 0]
-      Scale: [11.2152224, 0.573502064, 1]
-    SpriteRendererComponent:
-      Color: [0.563706577, 0.563700914, 0.563700914, 1]
-      TilingFactor: 1
-    Rigidbody2DComponent:
-      BodyType: Static
-      FixedRotation: false
-    BoxCollider2DComponent:
-      Offset: [0, 0]
-      Size: [0.5, 0.5]
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
-      RestitutionThreshold: 0.5
-  - Entity: 162497921084749155
-    TagComponent:
-      Tag: Circle
-    TransformComponent:
-      Translation: [0, 1.60000002, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CircleRendererComponent:
-      Color: [0.980918407, 1, 0.0115830302, 1]
-      Thickness: 0.075000003
-      Fade: 0.00499999989
-    Rigidbody2DComponent:
-      BodyType: Dynamic
-      FixedRotation: false
-    CircleCollider2DComponent:
-      Offset: [0, 0]
-      Radius: 0.5
-      Density: 1
-      Friction: 0.5
-      Restitution: 0
       RestitutionThreshold: 0.5

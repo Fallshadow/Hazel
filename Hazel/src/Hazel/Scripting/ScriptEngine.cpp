@@ -7,6 +7,8 @@
 #include "mono/metadata/assembly.h"
 #include "mono/metadata/object.h"
 #include "mono/metadata/tabledefs.h"
+#include "mono/metadata/mono-debug.h"
+#include "mono/metadata/threads.h"
 
 #include "FileWatch.h"
 
@@ -68,7 +70,7 @@ namespace Hazel
 		}
 
 		// 加载C#程序集
-		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath)
+		static MonoAssembly* LoadMonoAssembly(const std::filesystem::path& assemblyPath, bool loadPDB = false)
 		{
 			uint32_t fileSize = 0;
 			char* fileData = ReadBytes(assemblyPath, &fileSize);
@@ -85,6 +87,21 @@ namespace Hazel
 				const char* errorMessage = mono_image_strerror(status);
 				// 使用 errorMessage 数据记录一些错误消息
 				return nullptr;
+			}
+
+			if (loadPDB)
+			{
+				std::filesystem::path pdbPath = assemblyPath;
+				pdbPath.replace_extension(".pdb");
+
+				if (std::filesystem::exists(pdbPath))
+				{
+					uint32_t pdbFileSize = 0;
+					char* pdbFileData = ReadBytes(pdbPath, &pdbFileSize);
+					mono_debug_open_image_from_memory(image, (const mono_byte*)pdbFileData, pdbFileSize);
+					HZ_CORE_INFO("Loaded PDB {}", pdbPath);
+					delete[] pdbFileData;
+				}
 			}
 
 			// 通过有效的图像加载创建一个MonoAssembly
@@ -171,6 +188,8 @@ namespace Hazel
 
 		Scope<filewatch::FileWatch<std::string>> AppAssemblyFileWatcher;
 		bool AssemblyReloadPending = false;
+
+		bool EnableDebugging = true;
 
 		// Runtime
 		Scene* SceneContext = nullptr;
@@ -265,7 +284,7 @@ namespace Hazel
 
 		s_SEData->CoreAssemblyFilepath = filepath;
 		// 加载C#程序集
-		s_SEData->CoreAssembly = Utils::LoadMonoAssembly(filepath);
+		s_SEData->CoreAssembly = Utils::LoadMonoAssembly(filepath, s_SEData->EnableDebugging);
 		// 获取image引用
 		s_SEData->CoreAssemblyImage = mono_assembly_get_image(s_SEData->CoreAssembly);
 		// 查看程序集中包含的所有类、结构体和枚举
@@ -276,7 +295,7 @@ namespace Hazel
 	{
 		// Move this maybe
 		s_SEData->AppAssemblyFilepath = filepath;
-		s_SEData->AppAssembly = Utils::LoadMonoAssembly(filepath);
+		s_SEData->AppAssembly = Utils::LoadMonoAssembly(filepath, s_SEData->EnableDebugging);
 
 		s_SEData->AppAssemblyImage = mono_assembly_get_image(s_SEData->AppAssembly);
 
@@ -477,7 +496,8 @@ namespace Hazel
 	// 调用函数
 	MonoObject* ScriptClass::InvokeMethod(MonoObject* instance, MonoMethod* method, void** params)
 	{
-		return mono_runtime_invoke(method, instance, params, nullptr);
+		MonoObject* exception = nullptr;
+		return mono_runtime_invoke(method, instance, params, &exception);
 	}
 
 	void ScriptEngine::InitMono()
@@ -487,6 +507,17 @@ namespace Hazel
 		// 相对于当前工作目录的路径，当前在Hazelnut
 		mono_set_assemblies_path("mono/lib");
 
+		if (s_SEData->EnableDebugging)
+		{
+			const char* argv[2] = {
+				"--debugger-agent=transport=dt_socket,address=127.0.0.1:2550,server=y,suspend=n,loglevel=3,logfile=MonoDebugger.log",
+				"--soft-breakpoints"
+			};
+
+			mono_jit_parse_options(2, (char**)argv);
+			mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+		}
+
 		// 初始化mono，还有一个带version的函数，但我们一般让mono自己选择版本
 		// 在调用此函数时，务必给它传递一个字符串，这个字符串本质上代表runtime的名称
 		MonoDomain* rootDomain = mono_jit_init("HazelJITRuntime");
@@ -494,6 +525,11 @@ namespace Hazel
 
 		// 在调用此函数时，我们会得到一个 MonoDomain 指针，重要的是我们要存储这个指针，因为稍后我们必须手动清理它
 		s_SEData->RootDomain = rootDomain;
+
+		if (s_SEData->EnableDebugging)
+			mono_debug_domain_create(s_SEData->RootDomain);
+
+		mono_thread_set_main(mono_thread_current());
 #pragma endregion
 	}
 
