@@ -184,40 +184,24 @@ namespace Hazel
 		InitMono();
 		ScriptGlue::RegisterFunctions();
 
-		LoadAssembly("Resources/Scripts/Hazel-ScriptCore.dll");
-		LoadAppAssembly("SandboxProject/Assets/Scripts/Binaries/Sandbox.dll");
+		bool status = LoadAssembly("Resources/Scripts/Hazel-ScriptCore.dll");
+		if (!status)
+		{
+			HZ_CORE_ERROR("[ScriptEngine] Could not load Hazel-ScriptCore assembly.");
+			return;
+		}
+		status = LoadAppAssembly("SandboxProject/Assets/Scripts/Binaries/Sandbox.dll");
+		if (!status)
+		{
+			HZ_CORE_ERROR("[ScriptEngine] Could not load app assembly.");
+			return;
+		}
+
 		LoadAssemblyClasses();
 
 		ScriptGlue::RegisterComponents();
 
 		s_SEData->EntityClass = ScriptClass("Hazel", "Entity", true);
-
-#if 0
-		MonoObject* instance = s_SEData->EntityClass.Instantiate();
-
-		// Call method
-		MonoMethod* printMessageFunc = s_SEData->EntityClass.GetMethod("PrintMessage", 0);
-		s_SEData->EntityClass.InvokeMethod(instance, printMessageFunc);
-
-		MonoMethod* printIntFunc = s_SEData->EntityClass.GetMethod("PrintInt", 1);
-		int value = 5;
-		void* param = &value;
-		s_SEData->EntityClass.InvokeMethod(instance, printIntFunc, &param);
-
-		MonoMethod* printIntsFunc = s_SEData->EntityClass.GetMethod("PrintInts", 2);
-		int value2 = 508;
-		void* params[2] =
-		{
-			&value,
-			&value2
-		};
-		s_SEData->EntityClass.InvokeMethod(instance, printIntsFunc, params);
-
-		MonoString* monoString = mono_string_new(s_SEData->AppDomain, "Hello World from C++!");
-		MonoMethod* printCustomMessageFunc = s_SEData->EntityClass.GetMethod("PrintCustomMessage", 1);
-		void* stringParam = monoString;
-		s_SEData->EntityClass.InvokeMethod(instance, printCustomMessageFunc, &stringParam);
-#endif
 	}
 
 	void ScriptEngine::Shutdown()
@@ -241,7 +225,7 @@ namespace Hazel
 	}
 
 	// 加载C#程序集
-	void ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)
+	bool ScriptEngine::LoadAssembly(const std::filesystem::path& filepath)
 	{
 		// 创建应用程序域，第一个参数是我们自己起的名字，第二个参数是配置文件路径，我们不需要
 		s_SEData->AppDomain = mono_domain_create_appdomain("HazelScriptRuntime", nullptr);
@@ -252,17 +236,26 @@ namespace Hazel
 		s_SEData->CoreAssemblyFilepath = filepath;
 		// 加载C#程序集
 		s_SEData->CoreAssembly = Utils::LoadMonoAssembly(filepath, s_SEData->EnableDebugging);
+
+		if (s_SEData->CoreAssembly == nullptr)
+			return false;
+
 		// 获取image引用
 		s_SEData->CoreAssemblyImage = mono_assembly_get_image(s_SEData->CoreAssembly);
 		// 查看程序集中包含的所有类、结构体和枚举
-		Utils::PrintAssemblyTypes(s_SEData->CoreAssembly);
+		// Utils::PrintAssemblyTypes(s_SEData->CoreAssembly);
+
+		return true;
 	}
 
-	void ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
+	bool ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
 	{
 		// Move this maybe
 		s_SEData->AppAssemblyFilepath = filepath;
 		s_SEData->AppAssembly = Utils::LoadMonoAssembly(filepath, s_SEData->EnableDebugging);
+
+		if (s_SEData->AppAssembly == nullptr)
+			return false;
 
 		s_SEData->AppAssemblyImage = mono_assembly_get_image(s_SEData->AppAssembly);
 
@@ -270,6 +263,8 @@ namespace Hazel
 
 		s_SEData->AppAssemblyFileWatcher = CreateScope<filewatch::FileWatch<std::string>>(filepath.string(), OnAppAssemblyFileSystemEvent);
 		s_SEData->AssemblyReloadPending = false;
+
+		return true;
 	}
 
 	void ScriptEngine::ReloadAssembly()
@@ -323,10 +318,15 @@ namespace Hazel
 	void ScriptEngine::OnUpdateEntity(Entity entity, Timestep ts)
 	{
 		UUID entityUUID = entity.GetUUID();
-		HZ_CORE_ASSERT(s_SEData->EntityInstances.find(entityUUID) != s_SEData->EntityInstances.end());
-
-		Ref<ScriptInstance> instance = s_SEData->EntityInstances[entityUUID];
-		instance->InvokeOnUpdate((float)ts);
+		if (s_SEData->EntityInstances.find(entityUUID) != s_SEData->EntityInstances.end())
+		{
+			Ref<ScriptInstance> instance = s_SEData->EntityInstances[entityUUID];
+			instance->InvokeOnUpdate((float)ts);
+		}
+		else
+		{
+			HZ_CORE_ERROR("Could not find ScriptInstance for entity {}", entityUUID);
+		}
 	}
 
 	Scene* ScriptEngine::GetSceneContext()
