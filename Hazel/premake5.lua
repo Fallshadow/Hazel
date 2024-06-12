@@ -38,6 +38,8 @@ project "Hazel"
 		"%{IncludeDir.GLAD}",
 		"%{IncludeDir.Imgui}",
 		"%{IncludeDir.glm}",
+		"%{IncludeDir.msdfgen}",
+		"%{IncludeDir.msdf_atlas_gen}",
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.mono}",
@@ -51,6 +53,7 @@ project "Hazel"
 		"GLFW",
 		"GLAD",
 		"imgui",
+		"msdf-atlas-gen",
 		"yaml-cpp",
 		"opengl32.lib",
 
