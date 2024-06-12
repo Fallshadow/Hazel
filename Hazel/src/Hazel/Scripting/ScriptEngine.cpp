@@ -215,6 +215,12 @@ namespace Hazel
 		delete s_SEData;
 	}
 
+	MonoObject* ScriptEngine::GetManagedInstance(UUID uuid)
+	{
+		HZ_CORE_ASSERT(s_SEData->EntityInstances.find(uuid) != s_SEData->EntityInstances.end());
+		return s_SEData->EntityInstances.at(uuid)->GetManagedObject();
+	}
+
 	// 为类分配对象内存并调用无参构造
 	MonoObject* ScriptEngine::InstantiateClass(MonoClass* monoClass)
 	{
