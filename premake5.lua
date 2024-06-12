@@ -34,6 +34,7 @@ IncludeDir["entt"] = "%{wks.location}/Hazel/vendor/entt/include"
 IncludeDir["yaml_cpp"] = "%{wks.location}/Hazel/vendor/yaml-cpp/include"
 IncludeDir["ImGuizmo"] = "%{wks.location}/Hazel/vendor/ImGuizmo"
 IncludeDir["Box2D"] = "%{wks.location}/Hazel/vendor/Box2D/include"
+IncludeDir["filewatch"] = "%{wks.location}/Hazel/vendor/filewatch"
 IncludeDir["mono"] = "%{wks.location}/Hazel/vendor/mono/include"
 
 LibraryDir = {}
