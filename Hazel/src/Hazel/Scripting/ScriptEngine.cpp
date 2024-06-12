@@ -184,6 +184,7 @@ namespace Hazel
 
 		std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
 		std::unordered_map<UUID, Ref<ScriptInstance>> EntityInstances;
+		std::unordered_map<UUID, ScriptFieldMap> EntityScriptFields;
 
 		// Runtime
 		Scene* SceneContext = nullptr;
@@ -287,8 +288,19 @@ namespace Hazel
 		const auto& sc = entity.GetComponent<ScriptComponent>();
 		if (ScriptEngine::EntityClassExists(sc.ClassName))
 		{
+			UUID entityID = entity.GetUUID();
+
 			Ref<ScriptInstance> instance = CreateRef<ScriptInstance>(s_SEData->EntityClasses[sc.ClassName], entity);
-			s_SEData->EntityInstances[entity.GetUUID()] = instance;
+			s_SEData->EntityInstances[entityID] = instance;
+
+			// Copy field values
+			if (s_SEData->EntityScriptFields.find(entityID) != s_SEData->EntityScriptFields.end())
+			{
+				const ScriptFieldMap& fieldMap = s_SEData->EntityScriptFields.at(entityID);
+				for (const auto& [name, fieldInstance] : fieldMap)
+					instance->SetFieldValueInternal(name, fieldInstance.m_Buffer);
+			}
+
 			instance->InvokeOnCreate();
 		}
 	}
@@ -316,6 +328,14 @@ namespace Hazel
 		return it->second;
 	}
 
+	Ref<ScriptClass> ScriptEngine::GetEntityClass(const std::string& name)
+	{
+		if (s_SEData->EntityClasses.find(name) == s_SEData->EntityClasses.end())
+			return nullptr;
+
+		return s_SEData->EntityClasses.at(name);
+	}
+
 	void ScriptEngine::OnRuntimeStop()
 	{
 		s_SEData->SceneContext = nullptr;
@@ -326,6 +346,14 @@ namespace Hazel
 	std::unordered_map<std::string, Ref<ScriptClass>> ScriptEngine::GetEntityClasses()
 	{
 		return s_SEData->EntityClasses;
+	}
+
+	ScriptFieldMap& ScriptEngine::GetScriptFieldMap(Entity entity)
+	{
+		HZ_CORE_ASSERT(entity);
+
+		UUID entityID = entity.GetUUID();
+		return s_SEData->EntityScriptFields[entityID];
 	}
 
 	void ScriptEngine::LoadAssemblyClasses()
