@@ -156,6 +156,9 @@ namespace Hazel
 		MonoAssembly* AppAssembly = nullptr;
 		MonoImage* AppAssemblyImage = nullptr;
 
+		std::filesystem::path CoreAssemblyFilepath;
+		std::filesystem::path AppAssemblyFilepath;
+
 		ScriptClass EntityClass;
 
 		std::unordered_map<std::string, Ref<ScriptClass>> EntityClasses;
@@ -172,12 +175,13 @@ namespace Hazel
 	{
 		s_SEData = new ScriptEngineData();
 		InitMono();
+		ScriptGlue::RegisterFunctions();
+
 		LoadAssembly("Resources/Scripts/Hazel-ScriptCore.dll");
 		LoadAppAssembly("SandboxProject/Assets/Scripts/Binaries/Sandbox.dll");
 		LoadAssemblyClasses();
 
 		ScriptGlue::RegisterComponents();
-		ScriptGlue::RegisterFunctions();
 
 		s_SEData->EntityClass = ScriptClass("Hazel", "Entity", true);
 
@@ -237,6 +241,8 @@ namespace Hazel
 		// 将新的应用程序域设置为当前应用程序域，第一个参数为新的应用程序域，第二个参数为是否强制执行，其实false应该也行，true可以让正在卸载应用程序域时也强行设置
 		mono_domain_set(s_SEData->AppDomain, true);
 
+
+		s_SEData->CoreAssemblyFilepath = filepath;
 		// 加载C#程序集
 		s_SEData->CoreAssembly = Utils::LoadMonoAssembly(filepath);
 		// 获取image引用
@@ -248,11 +254,28 @@ namespace Hazel
 	void ScriptEngine::LoadAppAssembly(const std::filesystem::path& filepath)
 	{
 		// Move this maybe
+		s_SEData->AppAssemblyFilepath = filepath;
 		s_SEData->AppAssembly = Utils::LoadMonoAssembly(filepath);
 
 		s_SEData->AppAssemblyImage = mono_assembly_get_image(s_SEData->AppAssembly);
 
 		Utils::PrintAssemblyTypes(s_SEData->AppAssembly);
+	}
+
+	void ScriptEngine::ReloadAssembly()
+	{
+		mono_domain_set(mono_get_root_domain(), false);
+
+		mono_domain_unload(s_SEData->AppDomain);
+
+		LoadAssembly(s_SEData->CoreAssemblyFilepath);
+		LoadAppAssembly(s_SEData->AppAssemblyFilepath);
+		LoadAssemblyClasses();
+
+		ScriptGlue::RegisterComponents();
+
+		// Retrieve and instantiate class
+		s_SEData->EntityClass = ScriptClass("Hazel", "Entity", true);
 	}
 
 	void ScriptEngine::OnRuntimeStart(Scene* scene)
@@ -452,12 +475,12 @@ namespace Hazel
 
 	void ScriptEngine::ShutdownMono()
 	{
-		// NOTE(Yan): mono is a little confusing to shutdown, so maybe come back to this
+		mono_domain_set(mono_get_root_domain(), false);
 
-		// mono_domain_unload(s_SEData->AppDomain);
+		mono_domain_unload(s_SEData->AppDomain);
 		s_SEData->AppDomain = nullptr;
 
-		// mono_jit_cleanup(s_SEData->RootDomain);
+		mono_jit_cleanup(s_SEData->RootDomain);
 		s_SEData->RootDomain = nullptr;
 	}
 
