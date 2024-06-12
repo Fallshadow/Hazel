@@ -68,7 +68,7 @@ Entities:
       Scale: [1, 1, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\ChernoLogo.png
+      TexturePath: SandboxProject\Assets\SandboxProject\Assets\Textures\ChernoLogo.png
       TilingFactor: 1
     Rigidbody2DComponent:
       BodyType: Dynamic
@@ -93,7 +93,7 @@ Entities:
         []
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\Checkerboard.png
+      TexturePath: SandboxProject\Assets\Textures\ChernoLogo.png
       TilingFactor: 1
   - Entity: 12477523328540439941
     TagComponent:
@@ -104,7 +104,7 @@ Entities:
       Scale: [0.999999881, 0.999999881, 1]
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
-      TexturePath: assets\textures\ChernoLogo.png
+      TexturePath: SandboxProject\Assets\SandboxProject\Assets\Textures\ChernoLogo.png
       TilingFactor: 1
     Rigidbody2DComponent:
       BodyType: Dynamic
