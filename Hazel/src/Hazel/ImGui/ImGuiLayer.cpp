@@ -6,6 +6,7 @@
 
 #include <examples/imgui_impl_opengl3.cpp>
 #include <examples/imgui_impl_glfw.cpp>
+#include <misc/cpp/imgui_stdlib.cpp>
 
 #include "Hazel/Core/Application.h"
 // 按键映射的临时方案所需
